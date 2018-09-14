@@ -4,16 +4,40 @@
 	<title>Customer</title>
 </head>
 <body>
-	Total 
+	<div id="app">
+	{{total}}
+</div>
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 <script type="text/javascript" charset="utf-8">
 	if(sessionStorage.getItem("customerid")==='undefined'){
 		logout();
 	}
-function logout(){
-	sessionStorage.clear();
-	window.location="index.html";
-}
+	var total=0;
+	fetch('http://localhost/bams/v1/owner', {
+	    method: 'get'
+	  })
+	  .then(function(response) { return response.json(); })
+	  .then(function (response) {	     
+	     if (response.status!=false){
+	     	console.log(response[0]);
+	     	total=response[0];
+	     	const app = new Vue({
+			  el: '#app',
+			  data: {
+			    total: 'TOTAL UANG DI BANK = '+total,
+			  },			   
+			});	     	
+	     } 
+	  })
+	  .catch(function (error) {
+	    console.log('Request failed', error);
+	  });
+
+	
+	function logout(){
+		sessionStorage.clear();
+		window.location="index.html";
+	}
 </script>
 </body>
 </html>
