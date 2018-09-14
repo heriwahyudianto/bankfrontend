@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Customer</title>
+</head>
+<body>
+	<button onclick="logout();">Logout</button> | <a href="bukutabungan.html">Buku tabungan</a> | <a href="tarik.html">Tarik</a>
+<div id="app"> 
+	<h1 id="account">Nomor Rekening : {{account}}</h1>	
+	<h2 id="nama">Nama: {{nama}}</h2>	
+	<h3 id="phone">Telp: {{phone}}</h3>	
+	<h4 id="email">Email: {{email}}</h4>	
+	<h5 id="address">Alamat: {{address}}</h5>	
+	<h6 id="descr">Keterangan: {{descr}}</h6>	
+	<h1 id="saldoatas">Saldo : {{saldo}}</h1>
+</div>
+	<form id="transfer-form" action="" method="post" accept-charset="utf-8"  @submit.prevent="processForm">
+		<h1>Transfer</h1>
+		<input type="number" min="0" max="99999999999" v-model="accountnumber" name="accountnumber" value="" placeholder="To Account Number" required="required" autofocus="autofocus">
+		<span v-if="seen">TODO data akun yang mau di transfer</span>
+		<input type="number" name="amount" min="0" placeholder="Amount" v-model="amount">
+		<button type="submit">Transfer</button>
+	</form>
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script type="text/javascript" charset="utf-8">
+	if(sessionStorage.getItem("customerid")==='undefined'){
+		logout();
+	}
+	var saldodebet =0;
+	var saldokredit=0;
+	var saldo=0;
+ fetch('http://localhost/bams/v1/customer/id/'+sessionStorage.getItem("customerid"), {
+    method: 'get',
+  })
+  .then(function(response) { return response.json(); })
+  .then(function (response) {	     
+     console.log(response);
+     var app = new Vue({
+		  el: '#app',
+		  data: {
+		    account: response.accountnumber,
+		    nama: response.name,
+		    phone: response.phone,
+		    email: response.email,
+		    address: response.address,
+		    descr: response.descr,
+		    saldo: saldo
+		  }
+		})
+  })
+  .catch(function (error) {
+    console.log('Request failed', error);
+  });
+
+ fetch('http://localhost/bams/v1/transaction/customerid/'+sessionStorage.getItem("customerid"), {
+    method: 'get',
+  })
+  .then(function(response) { return response.json(); })
+  .then(function (response) {	     
+     response.forEach(function(datas) {
+     	saldodebet=parseInt(saldodebet)+parseInt(datas.debet);
+     	saldokredit=parseInt(saldokredit)+parseInt(datas.credit);
+     });
+     saldo=saldodebet-saldokredit;
+  })
+  .catch(function (error) {
+    console.log('Request failed', error);
+  });
+
+	var correctlogin=false;
+const app = new Vue({
+  el: '#transfer-form',
+  data: {
+    accountnumber: '',
+    password: '',
+    seen: correctlogin,
+    amount: 0
+  },
+   // our methods
+  methods: {
+    processForm: function() {
+      fetch('http://localhost/bams/v1/transfers', {
+	    method: 'post',
+	    headers: {
+	      "Content-type": "application/x-www-form-urlencoded; charset=UTF-8"
+	    },
+	    body: 'toaccountnumber='+this.accountnumber+'&amount='+this.amount+'&fromcustomerid='+sessionStorage.getItem("customerid")
+	  })
+	  .then(function(response) { console.log(response); return response.json(); })
+	  .then(function (response) {	     
+	     console.log(response);
+	     if (response.status!=false){
+	     	//todo jwt	     	
+	     	window.location = "bukutabungan.html";
+	     } else {
+	     	correctlogin=true;
+	     }
+	  })
+	  .catch(function (error) {
+	  	correctlogin=true;
+	    console.log('Request failed', error);
+	  });
+    }
+  }
+});
+
+
+function logout(){
+	sessionStorage.clear();
+	window.location="index.html";
+}
+</script>
+</body>
+</html>

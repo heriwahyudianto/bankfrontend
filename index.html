@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Customer</title>
+</head>
+<body>
+<div id="app">
+	<form id="login-form" action="" method="post" accept-charset="utf-8"  @submit.prevent="processForm">
+		<h1>Login</h1>
+		<input type="number" min="0" max="99999999999" v-model="accountnumber" name="accountnumber" value="" placeholder="Account Number" required="required" autofocus="autofocus">
+		<input type="password" name="password" v-model="password" value="" placeholder="password">
+		<button type="submit">Masuk</button>
+		<span v-if="seen">salah akun atau password </span>
+	</form>
+	
+</div>
+<a href="register.html">Register</a>
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script type="text/javascript" charset="utf-8">
+	var correctlogin=false;
+const app = new Vue({
+  el: '#login-form',
+  data: {
+    accountnumber: '',
+    password: '',
+    seen: correctlogin
+  },
+   // our methods
+  methods: {
+    processForm: function() {
+      fetch('http://localhost/bams/v1/login', {
+	    method: 'post',
+	    headers: {
+	      "Content-type": "application/x-www-form-urlencoded; charset=UTF-8"
+	    },
+	    body: 'accountnumber='+this.accountnumber+'&password='+this.password
+	  })
+	  .then(function(response) { return response.json(); })
+	  .then(function (response) {	     
+	     if (response.status!=false){
+	     	//todo jwt
+	     	sessionStorage.setItem("customerid", response.id);
+	     	window.location = "bukutabungan.html";
+	     } else {
+	     	correctlogin=true;
+	     }
+	  })
+	  .catch(function (error) {
+	  	correctlogin=true;
+	    console.log('Request failed', error);
+	  });
+    }
+  }
+});
+</script>
+</body>
+</html>

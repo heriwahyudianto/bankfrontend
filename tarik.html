@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Customer</title>
+</head>
+<body>
+	<button onclick="logout();">Logout</button> | <a href="transfer.html">Transfer</a> | <a href="tarik.html">Tarik</a>
+	<div>
+		TO DO withdraw
+</div>
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script type="text/javascript" charset="utf-8">
+	if(sessionStorage.getItem("customerid")==='undefined'){
+		logout();
+	}
+function logout(){
+	sessionStorage.clear();
+	window.location="index.html";
+}
+</script>
+</body>
+</html>

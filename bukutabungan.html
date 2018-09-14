@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Customer</title>
+</head>
+<body>
+	<button onclick="logout();">Logout</button> | <a href="transfer.html">Transfer</a> | <a href="tarik.html">Tarik</a>
+<div id="app"> 
+	<h1 id="account">Nomor Rekening : {{account}}</h1>	
+	<h2 id="nama">Nama: {{nama}}</h2>	
+	<h3 id="phone">Telp: {{phone}}</h3>	
+	<h4 id="email">Email: {{email}}</h4>	
+	<h5 id="address">Alamat: {{address}}</h5>	
+	<h6 id="descr">Keterangan: {{descr}}</h6>	
+	<h1 id="saldoatas">Saldo : {{saldo}}</h1>
+</div>
+<div id="app4">
+	<table>
+		<caption>Buku Tabungan</caption>
+		<thead>
+			<tr>
+				<th>tanggal</th>
+				<th>keterangan</th>
+				<th>debet</th>
+				<th>kredit</th>
+			</tr>
+		</thead>
+		<tbody id="datatransaksi" >
+		</tbody>
+		<tfoot>
+			<tr><td colspan="2" rowspan="" headers="">Saldo</td>
+				<td colspan="2" rowspan="" headers="" id="saldo"></td>
+			</tr>
+		</tfoot>
+	</table>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script type="text/javascript" charset="utf-8">
+	if(sessionStorage.getItem("customerid")==='undefined'){
+		logout();
+	}
+	var saldodebet =0;
+	var saldokredit=0;
+	var saldo=0;
+ fetch('http://localhost/bams/v1/customer/id/'+sessionStorage.getItem("customerid"), {
+    method: 'get',
+  })
+  .then(function(response) { return response.json(); })
+  .then(function (response) {	     
+     console.log(response);
+     var app = new Vue({
+		  el: '#app',
+		  data: {
+		    account: response.accountnumber,
+		    nama: response.name,
+		    phone: response.phone,
+		    email: response.email,
+		    address: response.address,
+		    descr: response.descr,
+		    saldo: saldo
+		  }
+		})
+  })
+  .catch(function (error) {
+    console.log('Request failed', error);
+  });
+
+ fetch('http://localhost/bams/v1/transaction/customerid/'+sessionStorage.getItem("customerid"), {
+    method: 'get',
+  })
+  .then(function(response) { return response.json(); })
+  .then(function (response) {	     
+     var transaction=[];
+     response.forEach(function(datas) {
+     	var baris = document.createElement("TR");                       // Create a <p> node
+		var kolomtgl = document.createElement("TD");
+		var kontentgl = document.createTextNode(datas.create_at);  
+		var kolomket = document.createElement("TD");
+		var kontenket = document.createTextNode(datas.descr);  
+		var kolomdebet = document.createElement("TD");
+		var kontendebet = document.createTextNode(datas.debet);  
+		var kolomkredit = document.createElement("TD");
+		var kontenkredit = document.createTextNode(datas.credit);  
+		kolomtgl.appendChild(kontentgl);
+		kolomket.appendChild(kontenket);
+		kolomdebet.appendChild(kontendebet);
+		kolomkredit.appendChild(kontenkredit);
+
+		baris.appendChild(kolomtgl);                                          // Append the text to <p>
+		baris.appendChild(kolomket);                                          // Append the text to <p>
+		baris.appendChild(kolomdebet);                                          // Append the text to <p>
+		baris.appendChild(kolomkredit);                                          // Append the text to <p>
+		document.getElementById("datatransaksi").appendChild(baris);
+     	saldodebet=parseInt(saldodebet)+parseInt(datas.debet);
+     	saldokredit=parseInt(saldokredit)+parseInt(datas.credit);
+     	console.log(saldodebet-saldokredit);
+     });
+     saldo=saldodebet-saldokredit;
+     document.getElementById("saldo").innerHTML=saldodebet-saldokredit;
+  })
+  .catch(function (error) {
+    console.log('Request failed', error);
+  });
+function logout(){
+	sessionStorage.clear();
+	window.location="index.html";
+}
+</script>
+</body>
+</html>
